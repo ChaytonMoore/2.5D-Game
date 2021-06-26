@@ -4,6 +4,7 @@
 #include <vector>
 #include <iostream>
 #include "files.h"
+#include "WallTexturestore.h"
 
 //Wolfenstien engine
 
@@ -18,6 +19,10 @@ std::vector<sf::RectangleShape*> WallLines;// < Probably only a temporary soluti
 
 std::vector<Line> WallData;
 
+WallTextureStore* Textures = new WallTextureStore();
+
+
+
 
 
 void SetUpRender()
@@ -27,6 +32,9 @@ void SetUpRender()
 	R1.setFillColor(sf::Color(56,56,56));
 	R2.setFillColor(sf::Color(112,112,112));
 
+
+	//This will initate the texture library
+	//Textures->MountTextures();
 
 }
 
@@ -47,6 +55,18 @@ void WallCleanUp()
 	{
 		delete p;
 	}
+}
+
+
+
+void RenderVerticleLine(int Position,int TextureID,int StartingHeight)
+{
+	//firstly just get the texture we are using
+	sf::Image* Texture = Textures->WallT1;
+
+
+
+
 }
 
 
@@ -80,53 +100,72 @@ bool RenderWalls(sf::RenderWindow* window)
 		
 			for (size_t i = 0; i < 500; i++)
 			{
-				A = ((float)i / 318.3);
+				A = ((float)i / 636.6);
 
 
 
-				xTemp = 1000 * sin(A);
+				xTemp = 1000 * sin(A + PlayerRotation);
 
 
-				yTemp = 1000 * cos(A);
+				yTemp = 1000 * cos(A + PlayerRotation);
 
-				TempLine = Line(PlayerLocation, (xTemp*cos(PlayerRotation))+yTemp*sin(PlayerRotation), (yTemp*cos(PlayerRotation))+xTemp*sin(PlayerRotation));
+				TempLine = Line(PlayerLocation, xTemp, yTemp);
+				//TempLine = Line(PlayerLocation, (xTemp*cos(PlayerRotation))+yTemp*sin(PlayerRotation), (yTemp*cos(PlayerRotation))+xTemp*sin(PlayerRotation));
+
+
 				Intercept = Intersect(TempLine, WallData[n]);
 
 				
 				if (Intercept.x != NULL)
 				{
-					WallDistance = Distance(Intercept, PlayerLocation);
+					//WallDistance = Distance(Intercept, PlayerLocation);
+
+					WallDistance = (abs(Intercept.x - PlayerLocation.x) * sin(PlayerRotation)) + (abs(Intercept.y - PlayerLocation.y) * cos(PlayerRotation));
+					
+
 					LineShade = 255 - ((WallDistance * 60) > 255) * 255 - ((WallDistance * 60) <= 255) * (WallDistance * 60);
 					WallLines.push_back(new sf::RectangleShape(sf::Vector2f(1, (200 / WallDistance))));
 					WallLines.back()->setPosition(sf::Vector2f(i + 500, 300 - (100 / WallDistance)));
+
+
 					WallLines.back()->setFillColor(sf::Color(LineShade, LineShade, LineShade));
+
 
 				}
 			}
 
 			for (size_t i = 0; i < 500; i++)
 			{
-				A = ((float)i / 318.3);
+				A = ((float)i / 636.6);
 
 
 
-				xTemp = -1000 * sin(A);
+				xTemp = -1000 * sin(A+PlayerRotation);
 
 
-				yTemp = 1000 * cos(A);
+				yTemp = 1000 * cos(A + PlayerRotation);
 
-				//TempLine = Line(PlayerLocation, xTemp, yTemp);
-				TempLine = Line(PlayerLocation, (xTemp * cos(PlayerRotation)) + yTemp * sin(PlayerRotation), (yTemp * cos(PlayerRotation)) + xTemp * sin(PlayerRotation));
+				TempLine = Line(PlayerLocation, xTemp, yTemp);
+				//TempLine = Line(PlayerLocation, (xTemp * cos(PlayerRotation)) + yTemp * sin(PlayerRotation), (yTemp * cos(PlayerRotation)) + xTemp * sin(PlayerRotation));
+
+
 				Intercept = Intersect(TempLine, WallData[n]);
 
 				
 				if (Intercept.x != NULL)
 				{
-					WallDistance = Distance(Intercept, PlayerLocation);
+					//WallDistance = Distance(Intercept, PlayerLocation);
+					WallDistance = (abs(Intercept.x - PlayerLocation.x) * sin(PlayerRotation)) + (abs(Intercept.y - PlayerLocation.y) * cos(PlayerRotation));
+
+
 					LineShade = 255 - ((WallDistance * 60) > 255) * 255 - ((WallDistance * 60) <= 255) * (WallDistance * 60);
 					WallLines.push_back(new sf::RectangleShape(sf::Vector2f(1, (200 / WallDistance))));
 					WallLines.back()->setPosition(sf::Vector2f(500-i, 300 - (100 / WallDistance)));
+
 					WallLines.back()->setFillColor(sf::Color(LineShade, LineShade, LineShade));
+
+
+
 
 				}
 			}
@@ -198,14 +237,21 @@ void PlayerMovement(sf::Event event)
 
 		if (event.key.code == sf::Keyboard::Q)
 		{
-			PlayerRotation -= 0.05;
+			PlayerRotation += 0.05;
+			if (PlayerRotation > 6.283)
+			{
+				PlayerRotation = 0;
+			}
 
 		}
 
 		if (event.key.code == sf::Keyboard::E)
 		{
-			PlayerRotation += 0.05;
-
+			PlayerRotation -= 0.05;
+			if (PlayerRotation < 0)
+			{
+				PlayerRotation = 6.283;
+			}
 		}
 	}
 
@@ -217,7 +263,7 @@ int main()
 	
 	SetUpRender();
 
-	WallData = LoadWallsText("Map1Walls.txt");
+	WallData = LoadWallsText("Maps/1/Walls.txt");
 
 	while (window.isOpen())
 	{
