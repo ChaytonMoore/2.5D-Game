@@ -28,6 +28,11 @@ float Distance(sf::Vector2f a, sf::Vector2f b)
 	return sqrt(pow(a.x - b.x, 2) + pow(a.y - b.y, 2));
 }
 
+float TaxiDistance(sf::Vector2f a, sf::Vector2f b)
+{
+	return abs(a.x - b.x) + abs(a.y + b.y);
+}
+
 std::vector<std::string> SplitString(const std::string& str, const std::string& delim)
 {
 	std::vector<std::string> tokens;
