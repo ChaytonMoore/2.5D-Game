@@ -19,9 +19,9 @@ std::vector<sf::RectangleShape*> WallLines;// < Probably only a temporary soluti
 
 std::vector<Line> WallData;
 
-WallTextureStore* Textures = new WallTextureStore();
+WallTextureStore* Textures;
 
-
+sf::Image* TestTexture;
 
 
 
@@ -34,7 +34,11 @@ void SetUpRender()
 
 
 	//This will initate the texture library
+	//Textures = new WallTextureStore();
 	//Textures->MountTextures();
+	TestTexture = new sf::Image();
+
+	std::cout << TestTexture->loadFromFile("Textures/Walls/Wall1.png");
 
 }
 
@@ -59,11 +63,34 @@ void WallCleanUp()
 
 
 
-void RenderVerticleLine(int Position,int TextureID,int StartingHeight)
-{
-	//firstly just get the texture we are using
-	sf::Image* Texture = Textures->WallT1;
 
+void RenderVerticleLine(int Position,int TextureID,int StartingHeight, sf::RenderWindow* window)
+{
+	//numbers stuff
+	int PixelHeight = 0;
+
+
+
+	// get the texture we are using
+	sf::Image* Texture = TestTexture;//Textures->WallT1;
+
+	//Mod the position to make sure it workds correctly
+	Position = Position % Texture->getSize().x;
+	sf::RectangleShape* TempRect;
+
+	sf::Color PixelValue;
+
+	for (size_t i = 0; i < StartingHeight; i++)
+	{
+		PixelValue = Texture->getPixel(Position, PixelHeight);
+		TempRect = new sf::RectangleShape(sf::Vector2f(1,1));
+		TempRect->setFillColor(PixelValue);
+		TempRect->setPosition(sf::Vector2f(Position,StartingHeight));
+		
+		window->draw(*TempRect);
+		delete TempRect;
+	}
+	
 
 
 
@@ -98,9 +125,9 @@ bool RenderWalls(sf::RenderWindow* window)
 
 
 		
-			for (size_t i = 0; i < 500; i++)
+			for (size_t i = 0; i < 1000; i++)
 			{
-				A = ((float)i / 636.6);
+				A = ((float)i / 636.6) - 0.7854;
 
 
 
@@ -125,7 +152,7 @@ bool RenderWalls(sf::RenderWindow* window)
 
 					LineShade = 255 - ((WallDistance * 60) > 255) * 255 - ((WallDistance * 60) <= 255) * (WallDistance * 60);
 					WallLines.push_back(new sf::RectangleShape(sf::Vector2f(1, (200 / WallDistance))));
-					WallLines.back()->setPosition(sf::Vector2f(i + 500, 300 - (100 / WallDistance)));
+					WallLines.back()->setPosition(sf::Vector2f(i, 300 - (100 / WallDistance)));
 
 
 					WallLines.back()->setFillColor(sf::Color(LineShade, LineShade, LineShade));
@@ -134,41 +161,7 @@ bool RenderWalls(sf::RenderWindow* window)
 				}
 			}
 
-			for (size_t i = 0; i < 500; i++)
-			{
-				A = ((float)i / 636.6);
-
-
-
-				xTemp = -1000 * sin(A+PlayerRotation);
-
-
-				yTemp = 1000 * cos(A + PlayerRotation);
-
-				TempLine = Line(PlayerLocation, xTemp, yTemp);
-				//TempLine = Line(PlayerLocation, (xTemp * cos(PlayerRotation)) + yTemp * sin(PlayerRotation), (yTemp * cos(PlayerRotation)) + xTemp * sin(PlayerRotation));
-
-
-				Intercept = Intersect(TempLine, WallData[n]);
-
-				
-				if (Intercept.x != NULL)
-				{
-					//WallDistance = Distance(Intercept, PlayerLocation);
-					WallDistance = (abs(Intercept.x - PlayerLocation.x) * sin(PlayerRotation)) + (abs(Intercept.y - PlayerLocation.y) * cos(PlayerRotation));
-
-
-					LineShade = 255 - ((WallDistance * 60) > 255) * 255 - ((WallDistance * 60) <= 255) * (WallDistance * 60);
-					WallLines.push_back(new sf::RectangleShape(sf::Vector2f(1, (200 / WallDistance))));
-					WallLines.back()->setPosition(sf::Vector2f(500-i, 300 - (100 / WallDistance)));
-
-					WallLines.back()->setFillColor(sf::Color(LineShade, LineShade, LineShade));
-
-
-
-
-				}
-			}
+			
 
 
 
@@ -179,10 +172,15 @@ bool RenderWalls(sf::RenderWindow* window)
 			for (size_t i = 0; i < WallLines.size(); i++)
 			{
 				window->draw(*WallLines[i]);
+				//RenderVerticleLine(WallLines[i]->getPosition().x,0,200,window);
 
 			}
 		
 	}
+
+
+
+	//std::cout << PlayerLocation.x << " " << PlayerLocation.y << std::endl;
 
 	return true;
 }
