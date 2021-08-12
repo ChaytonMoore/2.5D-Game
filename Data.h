@@ -26,5 +26,7 @@ struct Wall  : public Line
 
 float Distance(sf::Vector2f a, sf::Vector2f b);
 
+float TaxiDistance(sf::Vector2f a, sf::Vector2f b);
+
 
 std::vector<std::string> SplitString(const std::string& str, const std::string& delim);
